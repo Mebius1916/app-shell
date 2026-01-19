@@ -1,0 +1,31 @@
+{
+  "name": "@djparty/sw-sdk",
+  "version": "1.0.0",
+  "description": "Service Worker Disaster Recovery SDK",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "rspack build",
+    "dev": "rspack build --watch"
+  },
+  "dependencies": {
+    "eventsource-parser": "^3.0.0",
+    "workbox-cacheable-response": "^7.4.0",
+    "workbox-window": "^7.0.0"
+  },
+  "peerDependencies": {
+    "workbox-core": "^7.0.0",
+    "workbox-expiration": "^7.0.0",
+    "workbox-navigation-preload": "^7.0.0",
+    "workbox-precaching": "^7.0.0",
+    "workbox-routing": "^7.0.0",
+    "workbox-strategies": "^7.0.0"
+  },
+  "author": "Bytedance",
+  "license": "ISC",
+  "devDependencies": {
+    "@rspack/cli": "^1.7.2",
+    "@rspack/core": "^1.7.2",
+    "ts-node": "^10.9.2"
+  }
+}
