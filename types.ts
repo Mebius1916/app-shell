@@ -1,10 +1,6 @@
 
 export interface RouteConfig {
-  /**
-   * List of URL patterns to match.
-   * Can be strings (prefix matching for pathname) or RegExps.
-   */
-  routes: (string | RegExp)[];
+  routes: string[];
 }
 
 export interface ApiStrategyConfig extends RouteConfig {
@@ -12,6 +8,7 @@ export interface ApiStrategyConfig extends RouteConfig {
   networkTimeoutSeconds?: number;
   maxEntries?: number;
   maxAgeSeconds?: number;
+  validateResponse?: (data: any, response: Response) => boolean | Promise<boolean>;
 }
 
 export interface StaticAssetsConfig {
@@ -22,43 +19,18 @@ export interface StaticAssetsConfig {
 }
 
 export interface SSEConfig {
-  /**
-   * Specific paths for SSE endpoints (exact match)
-   */
   routes: string[];
 }
 
 export interface IgnoreConfig {
-  /**
-   * Hostnames or path fragments to ignore (use NetworkOnly)
-   */
   patterns: string[];
 }
 
 export interface ServiceWorkerConfig {
-  /**
-   * Configuration for API routes (NetworkFirst)
-   */
   api?: ApiStrategyConfig;
-
-  /**
-   * Configuration for Static Assets (StaleWhileRevalidate)
-   */
   staticAssets?: StaticAssetsConfig;
-
-  /**
-   * Configuration for SSE endpoints (Custom Stream Caching)
-   */
   sse?: SSEConfig;
-
-  /**
-   * Patterns to ignore (NetworkOnly)
-   */
   ignore?: IgnoreConfig;
-
-  /**
-   * Fallback configuration
-   */
   fallback?: {
     enabled?: boolean;
   };

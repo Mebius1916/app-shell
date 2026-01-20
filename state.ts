@@ -1,7 +1,4 @@
 
-/**
- * Service Worker Global State
- */
 export const swState = {
   enabled: true,
 };

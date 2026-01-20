@@ -1,5 +1,5 @@
 {
-  "name": "@djparty/sw-sdk",
+  "name": "aegis",
   "version": "1.0.0",
   "description": "Service Worker Disaster Recovery SDK",
   "main": "index.ts",

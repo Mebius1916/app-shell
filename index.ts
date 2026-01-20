@@ -25,6 +25,12 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
   cleanupOutdatedCaches();
   navigationPreload.enable();
 
+  // 0. Global Emergency Stop (Must be first)
+  registerRoute(
+    () => !swState.enabled,
+    new NetworkOnly()
+  );
+
   // 2. Precache
   // @ts-ignore
   precacheAndRoute(self.__WB_MANIFEST || []);
@@ -51,7 +57,6 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
   if (config.staticAssets !== undefined) {
     registerStaticAssetsStrategy(config.staticAssets);
   } else {
-    // Default enabled if not specified
     registerStaticAssetsStrategy({ enabled: true });
   }
 
@@ -63,18 +68,6 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
   }
 
   // 6. Lifecycle & Messages
-  self.addEventListener('fetch', (event: any) => {
-    if (event.request.mode === 'navigate') {
-      event.waitUntil(
-        (async () => {
-          try {
-            if (event.preloadResponse) await event.preloadResponse;
-          } catch (error) {}
-        })()
-      );
-    }
-  });
-
   self.addEventListener('message', async (event: any) => {
     if (!event.data) return;
 

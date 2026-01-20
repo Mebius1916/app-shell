@@ -2,7 +2,6 @@
 import { registerRoute } from 'workbox-routing';
 import { createParser, EventSourceMessage } from 'eventsource-parser';
 import { CacheExpiration } from 'workbox-expiration';
-import { swState } from '../state';
 import { SSEConfig } from '../types';
 
 interface SSEEvent {
@@ -15,24 +14,18 @@ interface SSEEvent {
 export function registerSSEStrategy(config: SSEConfig) {
   const cacheName = 'sse-cache'; 
   
-  // 使用 CacheExpiration 类直接管理过期，而不是 ExpirationPlugin
   const sseExpiration = new CacheExpiration(cacheName, {
     maxEntries: 50,
     maxAgeSeconds: 24 * 60 * 60,
   });
 
   const sseHandler = async ({ event, request }: { event: any, request: Request }) => {
-    if (!swState.enabled) {
-      return fetch(request);
-    }
-    
     try {
       const response = await fetch(request);
       
       if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
         const cache = await caches.open(cacheName);
         
-        // 更新时间戳
         await sseExpiration.updateTimestamp(request.url);
 
         if (!response.body) return response;
@@ -71,7 +64,6 @@ export function registerSSEStrategy(config: SSEConfig) {
               });
               await cache.put(request, jsonResponse);
               
-              // 更新时间戳并触发清理
               await sseExpiration.updateTimestamp(request.url);
               await sseExpiration.expireEntries();
             }

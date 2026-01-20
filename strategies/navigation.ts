@@ -1,14 +1,8 @@
 
 import { registerRoute, NavigationRoute } from 'workbox-routing';
-import { NetworkFirst, NetworkOnly } from 'workbox-strategies';
+import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { swState } from '../state';
 
-/**
- * Standard Navigation Strategy (App Shell)
- * Hardcoded configuration for now as it's standard for App Shell, 
- * but can be exposed in config if needed.
- */
 export function registerNavigationStrategy() {
   const navigationHandler = new NetworkFirst({
     cacheName: 'pages',
@@ -28,12 +22,5 @@ export function registerNavigationStrategy() {
     ],
   });
 
-  const fallbackHandler = new NetworkOnly();
-
-  registerRoute(new NavigationRoute((args) => {
-    if (!swState.enabled) {
-      return fallbackHandler.handle(args);
-    }
-    return navigationHandler.handle(args);
-  }));
+  registerRoute(new NavigationRoute(navigationHandler));
 }
