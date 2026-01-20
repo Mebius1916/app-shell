@@ -2,7 +2,7 @@ import { Workbox } from 'workbox-window';
 
 export interface RegisterOptions {
   swUrl?: string;
-  autoSkipWaiting?: boolean;
+  autoSkipWaiting?: boolean | ((update: () => void) => void);
   isDev?: boolean;
 }
 
@@ -13,14 +13,26 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
     
     const wb = new Workbox(swUrl);
 
-    // Auto Skip Waiting in production
-    if (!isDev && options.autoSkipWaiting !== false) {
+    if (!isDev) {
       wb.addEventListener('waiting', () => {
-        wb.messageSkipWaiting();
+        if (options.autoSkipWaiting === undefined || options.autoSkipWaiting === true) {
+          wb.messageSkipWaiting();
+        } 
+        else if (typeof options.autoSkipWaiting === 'function') {
+          options.autoSkipWaiting(() => {
+            wb.messageSkipWaiting();
+          });
+        }
       });
     }
 
-    wb.register();
+    // Best Practice: Register after window load to avoid blocking initial page load
+    if (document.readyState === 'complete') {
+      wb.register();
+    } else {
+      window.addEventListener('load', () => wb.register());
+    }
+    
     return wb;
   }
   return null;

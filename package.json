@@ -1,9 +1,12 @@
 {
-  "name": "aegis",
-  "version": "1.0.0",
+  "name": "@byted/aegis",
+  "version": "1.0.q",
   "description": "Service Worker Disaster Recovery SDK",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rspack build",
     "dev": "rspack build --watch"

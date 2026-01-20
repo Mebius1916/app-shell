@@ -12,11 +12,11 @@ interface SSEEvent {
 }
 
 export function registerSSEStrategy(config: SSEConfig) {
-  const cacheName = 'sse-cache'; 
+  const cacheName = config.cacheName || 'sse-cache'; 
   
   const sseExpiration = new CacheExpiration(cacheName, {
-    maxEntries: 50,
-    maxAgeSeconds: 24 * 60 * 60,
+    maxEntries: config.maxEntries || 50,
+    maxAgeSeconds: config.maxAgeSeconds || 24 * 60 * 60,
   });
 
   const sseHandler = async ({ event, request }: { event: any, request: Request }) => {

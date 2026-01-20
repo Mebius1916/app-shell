@@ -20,6 +20,16 @@ export interface StaticAssetsConfig {
 
 export interface SSEConfig {
   routes: string[];
+  cacheName?: string;
+  maxEntries?: number;
+  maxAgeSeconds?: number;
+}
+
+export interface NavigationConfig {
+  cacheName?: string;
+  networkTimeoutSeconds?: number;
+  maxEntries?: number;
+  maxAgeSeconds?: number;
 }
 
 export interface IgnoreConfig {
@@ -30,6 +40,7 @@ export interface ServiceWorkerConfig {
   api?: ApiStrategyConfig;
   staticAssets?: StaticAssetsConfig;
   sse?: SSEConfig;
+  navigation?: NavigationConfig;
   ignore?: IgnoreConfig;
   fallback?: {
     enabled?: boolean;

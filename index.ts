@@ -60,7 +60,7 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
     registerStaticAssetsStrategy({ enabled: true });
   }
 
-  registerNavigationStrategy();
+  registerNavigationStrategy(config.navigation);
 
   // 5. Fallback
   if (config.fallback?.enabled !== false) {

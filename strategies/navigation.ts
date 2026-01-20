@@ -2,15 +2,16 @@
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { NavigationConfig } from '../types';
 
-export function registerNavigationStrategy() {
+export function registerNavigationStrategy(config: NavigationConfig = {}) {
   const navigationHandler = new NetworkFirst({
-    cacheName: 'pages',
-    networkTimeoutSeconds: 3,
+    cacheName: config.cacheName || 'pages',
+    networkTimeoutSeconds: config.networkTimeoutSeconds || 3,
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 20,
-        maxAgeSeconds: 24 * 60 * 60,
+        maxEntries: config.maxEntries || 20,
+        maxAgeSeconds: config.maxAgeSeconds || 24 * 60 * 60,
         purgeOnQuotaError: true,
       }),
       {
