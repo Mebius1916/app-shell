@@ -1,6 +1,6 @@
 {
   "name": "@byted/aegis",
-  "version": "1.0.q",
+  "version": "1.0.2",
   "description": "Service Worker Disaster Recovery SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,15 +8,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "rspack build",
+    "build": "rspack build && tsc",
     "dev": "rspack build --watch"
   },
   "dependencies": {
     "eventsource-parser": "^3.0.0",
     "workbox-cacheable-response": "^7.4.0",
-    "workbox-window": "^7.0.0"
-  },
-  "peerDependencies": {
+    "workbox-window": "^7.0.0",
     "workbox-core": "^7.0.0",
     "workbox-expiration": "^7.0.0",
     "workbox-navigation-preload": "^7.0.0",
