@@ -67,7 +67,18 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
     setupOfflineFallback();
   }
 
-  // 6. Lifecycle & Messages
+  // 6. Error Reporting
+  if (config.onError) {
+    self.addEventListener('error', (event: ErrorEvent) => {
+      config.onError?.(event.error || new Error(event.message), event);
+    });
+
+    self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+      config.onError?.(event.reason || new Error('Unhandled Promise Rejection'), event);
+    });
+  }
+
+  // 7. Lifecycle & Messages
   self.addEventListener('message', async (event: any) => {
     if (!event.data) return;
 
