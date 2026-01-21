@@ -4,13 +4,6 @@
 
 > Aegis (神盾) 为你的 Web 应用提供了一层坚固的防护，确保应用即使在网络崩溃或代码出现 Bug 时也能保持稳定运行。
 
-## 核心特性 (Features)
-
-- 🛡️ **紧急止损 (Kill Switch)**: 遇到线上严重故障，秒级关闭 Service Worker，强制所有请求回退网络，无需重新发版。
-- 🌊 **SSE 离线回放**: 支持 Server-Sent Events 流式数据的离线存储与回放，让实时应用（如 AI 对话）断网可用。
-- 🧠 **智能 API 容灾**: 深度定制的 NetworkFirst 策略，支持业务逻辑校验（如 `code === 0`），防止错误数据污染缓存。
-- ⚡ **零阻塞 (Zero Blocking)**: 自动延迟注册，确保 Service Worker 的下载解析绝对不抢占首屏资源。
-
 ## 安装 (Installation)
 
 ```bash
@@ -68,35 +61,6 @@ registerServiceWorker({
 
 ---
 
-## 技术原理与生命周期 (Technical Architecture)
-
-Aegis 的运行流程紧密贴合 Service Worker 的生命周期，并在每个关键节点植入了容灾与优化逻辑：
-
-#### 1. 注册与安装 (Registration & Install)
-
-**主线程**: Aegis Client 默认监听 `window.onload` 事件，确保主线程关键资源（CSS/JS）加载完毕后，才开始下载和注册 Service Worker。这利用了浏览器的空闲时间，避免 SW 脚本抢占首屏带宽，确保对 FCP (First Contentful Paint) 零影响。
-
-**SW 线程**: 在 `install` 阶段，Workbox 读取构建时生成的 Manifest，将核心静态资源（App Shell HTML, Core Assets）**原子性**地写入 Cache Storage。任何一个文件下载失败都会导致安装终止，防止不完整的缓存生效。
-
-#### 2. 激活与接管 (Activate & Claim)
-
-触发 `activate` 时，Aegis 自动清理旧版本的哈希资源，并调用 `clients.claim()` 强制接管当前所有打开的页面，确保新策略立即生效。
-
-#### 3. 运行时拦截 (Fetch Loop)
-
-这是 Aegis 的核心责任链，每个网络请求都会依次经过以下关卡：
-
-- **Level 0 - 熔断 (Kill Switch)**首先检查内存变量 `swState.enabled`。若为 `false`，直接返回 `NetworkOnly`，短路后续所有逻辑。这是应对线上故障的毫秒级逃生通道。
-- **Level 1 - 流式处理 (SSE)**对于 Server-Sent Events，Aegis 使用 `tee()` 分流技术：一路返回给前端，一路通过 `eventsource-parser` 序列化为 JSON 存入缓存。离线时，读取 JSON 并通过 `ReadableStream` 重新模拟协议流，实现独有的“离线回放”能力。
-- **Level 2 - API 准入 (Smart Cache)**采用扩展版 `NetworkFirst` 策略。在网络响应写入缓存前，会**克隆**响应体并执行用户配置的 `validateResponse` 函数。只有业务逻辑判断成功（如 `code === 0`）的数据才有资格进入缓存，杜绝“假成功”污染。
-- **Level 3 - 静态资源**
-  对于图片/JS，采用 `StaleWhileRevalidate` 策略实现秒开。同时集成 `ExpirationPlugin`，在触发浏览器存储配额限制 (`QuotaExceeded`) 时，自动按 LRU 算法清理旧缓存以保命。
-
-#### 4. 灾备兜底 (Fallback)
-
-当上述所有手段都失效（网络断开且缓存未命中），且请求为页面导航 (`navigate`) 时，Aegis 会自动从预缓存中提取 `index.html` 返回。这确保了 SPA 即使在完全离线状态下也能加载外壳，从而由前端路由接管并展示友好的离线提示。
-
----
 
 ## 配置详情 (Configuration Detail)
 
