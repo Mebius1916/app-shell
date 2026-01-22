@@ -203,26 +203,6 @@ createServiceWorker({
 });
 ```
 
-### 6. 错误上报 (`onError`)
-
-全局错误捕获，贯穿整个生命周期。
-
-| 参数名      | 类型         | 说明                                                                                |
-| :---------- | :----------- | :---------------------------------------------------------------------------------- |
-| `onError` | `Function` | 全局错误捕获回调 `(error, event) => void`。可用于对接 Sentry/Slardar 等监控平台。 |
-
-#### 示例
-
-```typescript
-createServiceWorker({
-  // ...其他配置
-  onError: (error, event) => {
-    console.error('[Aegis Error]', error);
-  // Sentry.captureException(error);
-  }
-});
-```
-
 ---
 
 ## 客户端注册参数 (RegisterOptions)
@@ -234,17 +214,17 @@ createServiceWorker({
 | `swUrl`           | `string`                  | 否   | `'/sw.js'`       | Service Worker 文件的部署路径                                                                                                               |
 | `autoSkipWaiting` | `boolean` \| `Function` | 否   | `true`           | 更新策略。<br>- `true`: 自动更新<br>- `false`: 手动更新<br>- `Function`: `(update) => void`，自定义回调，调用 `update()` 触发更新 |
 | `isDev`           | `boolean`                 | 否   | `process.env...` | 强制指定开发模式。开发模式下不会自动 `skipWaiting`，防止无限刷新循环。                                                                    |
+| `onError`         | `(error: Error) => void`  | 否   | `undefined`      | Service Worker 错误回调。SW 内部的异常会通过 postMessage 透传到这里，便于对接监控平台。                                                   |
 
 #### 示例
 
 ```typescript
 registerServiceWorker({
-  swUrl: '/service-worker.js', // 自定义路径，可不传
-  // 自定义更新 UI
-  autoSkipWaiting: (update) => {
-    if (confirm('新版本已就绪，是否刷新？')) {
-      update();
-    }
+  swUrl: '/service-worker.js',
+  // 监控 SW 报错
+  onError: (error) => {
+    console.error('[SW Error]', error);
+    // Slardar.report(error);
   }
 });
 ```

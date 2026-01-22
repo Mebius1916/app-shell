@@ -13,6 +13,7 @@ import { registerSSEStrategy } from './strategies/sse';
 import { registerNavigationStrategy } from './strategies/navigation';
 import { registerIgnoreStrategy } from './strategies/ignore';
 import { setupOfflineFallback } from './strategies/fallback';
+import { reportError } from './utils/logger';
 
 declare const self: ServiceWorkerGlobalScope & typeof globalThis;
 
@@ -68,15 +69,15 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
   }
 
   // 6. Error Reporting
-  if (config.onError) {
-    self.addEventListener('error', (event: ErrorEvent) => {
-      config.onError?.(event.error || new Error(event.message), event);
-    });
+  self.addEventListener('error', (event: ErrorEvent) => {
+    const error = event.error || new Error(event.message);
+    reportError(error, 'ERROR'); // 发布错误
+  });
 
-    self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-      config.onError?.(event.reason || new Error('Unhandled Promise Rejection'), event);
-    });
-  }
+  self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+    const error = event.reason || new Error('Unhandled Promise Rejection');
+    reportError(error, 'UNHANDLED_REJECTION'); // 发布错误
+  });
 
   // 7. Lifecycle & Messages
   self.addEventListener('message', async (event: any) => {

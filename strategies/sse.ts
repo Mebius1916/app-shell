@@ -21,8 +21,10 @@ export function registerSSEStrategy(config: SSEConfig) {
 
   const sseHandler = async ({ event, request }: { event: any, request: Request }) => {
     try {
+      // 先发起网络请求
       const response = await fetch(request);
       
+      // 如果响应成功且是 SSE 流，则返回响应并缓存
       if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
         const cache = await caches.open(cacheName);
         
@@ -32,12 +34,17 @@ export function registerSSEStrategy(config: SSEConfig) {
         
         const [stream1, stream2] = response.body.tee();
         
+        // 延长 sw 生命周期
         event.waitUntil((async () => {
           try {
             const reader = stream2.getReader();
             const decoder = new TextDecoder();
             const events: SSEEvent[] = [];
-
+            // const events = [
+            //   { id: "1", type: "message", data: "Welcome" },
+            //   { id: "2", type: "update",  data: "{\"price\": 100}" },
+            //   { id: "3", type: "message", data: "Bye" }
+            // ];
             const parser = createParser({
               onEvent: (event: EventSourceMessage) => {
                 events.push({
@@ -76,6 +83,7 @@ export function registerSSEStrategy(config: SSEConfig) {
       }
       return response;
     } catch (error) {
+      // 如果响应失败且有缓存，则返回缓存
       const cache = await caches.open(cacheName);
       const cachedResponse = await cache.match(request);
       

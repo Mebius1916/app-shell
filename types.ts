@@ -45,5 +45,4 @@ export interface ServiceWorkerConfig {
   fallback?: {
     enabled?: boolean;
   };
-  onError?: (error: Error, event?: Event | string) => void;
 }
