@@ -1,8 +1,14 @@
 # Aegis (@byted/aegis)
 
-一个专注于**容灾 (Resilience)**、**高性能**与**离线优先 (Offline-First)** 体验的 Service Worker SDK。
+一个专注于 `白屏容灾`、`高可用兜底`与 `极致弱网`体验的 Service Worker SDK。
 
 > Aegis (神盾) 为你的 Web 应用提供了一层坚固的防护，确保应用即使在网络崩溃或代码出现 Bug 时也能保持稳定运行。
+
+- ⚡️ **极速首屏**：基于 Workbox 预缓存核心资源，实现二次访问秒开，消除白屏等待。
+- 🛡️ **离线兜底**：网络故障时自动降级渲染预缓存的完整页面，确保应用离线可用。
+- 📦 **智能缓存**：内置 API、静态资源、SSE 等多场景最佳缓存策略，开箱即用。
+- 🚨 **监控透传**：自动捕获 SW 运行时异常并透传至主线程，消除监控盲区。
+- 🔌 **一键熔断**：支持紧急注销机制，遭遇严重故障时可快速自毁，保障业务止损。
 
 ## 安装 (Installation)
 
@@ -60,7 +66,6 @@ registerServiceWorker({
 ```
 
 ---
-
 
 ## 配置详情 (Configuration Detail)
 
@@ -214,7 +219,7 @@ createServiceWorker({
 | `swUrl`           | `string`                  | 否   | `'/sw.js'`       | Service Worker 文件的部署路径                                                                                                               |
 | `autoSkipWaiting` | `boolean` \| `Function` | 否   | `true`           | 更新策略。<br>- `true`: 自动更新<br>- `false`: 手动更新<br>- `Function`: `(update) => void`，自定义回调，调用 `update()` 触发更新 |
 | `isDev`           | `boolean`                 | 否   | `process.env...` | 强制指定开发模式。开发模式下不会自动 `skipWaiting`，防止无限刷新循环。                                                                    |
-| `onError`         | `(error: Error) => void`  | 否   | `undefined`      | Service Worker 错误回调。SW 内部的异常会通过 postMessage 透传到这里，便于对接监控平台。                                                   |
+| `onError`         | `(error: Error) => void`  | 否   | `undefined`      | Service Worker 错误回调。SW 内部的异常会通过 postMessage 透传到这里，便于对接监控平台。                                                     |
 
 #### 示例
 

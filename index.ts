@@ -34,16 +34,8 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
   // @ts-ignore
   precacheAndRoute(self.__WB_MANIFEST || []);
 
-  // 3. HMR
-  registerRoute(
-    ({ url }) => url.pathname.includes('hot-update'),
-    new NetworkOnly()
-  );
-
-  // 4. Register Strategies
-  if (config.ignore) {
-    registerIgnoreStrategy(config.ignore);
-  }
+  // 3. Register Strategies
+  registerIgnoreStrategy(config.ignore);
 
   if (config.sse) {
     registerSSEStrategy(config.sse);
