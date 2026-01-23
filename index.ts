@@ -2,7 +2,6 @@
 import { clientsClaim } from 'workbox-core';
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import * as navigationPreload from 'workbox-navigation-preload';
 import { NetworkOnly } from 'workbox-strategies';
 
 import { ServiceWorkerConfig } from './types';
@@ -22,9 +21,8 @@ export * from './client';
 
 export function createServiceWorker(config: ServiceWorkerConfig) {
   // 1. Init
-  clientsClaim();
-  cleanupOutdatedCaches();
-  navigationPreload.enable();
+  clientsClaim(); // 立即接管页面 
+  cleanupOutdatedCaches(); // 清除旧的缓存
 
   // 0. Global Emergency Stop (Must be first)
   registerRoute(
