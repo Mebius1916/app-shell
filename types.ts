@@ -9,6 +9,7 @@ export interface ApiStrategyConfig extends RouteConfig {
   maxEntries?: number;
   maxAgeSeconds?: number;
   validateResponse?: (data: any, response: Response) => boolean | Promise<boolean>;
+  fetchOptions?: RequestInit;
 }
 
 export interface StaticAssetsConfig {
@@ -16,6 +17,7 @@ export interface StaticAssetsConfig {
   cacheName?: string;
   maxEntries?: number;
   maxAgeSeconds?: number;
+  fetchOptions?: RequestInit;
 }
 
 export interface SSEConfig {

@@ -39,7 +39,7 @@ export function registerApiStrategy(config: ApiStrategyConfig) {
         }
       },
     ],
-    fetchOptions: {
+    fetchOptions: config.fetchOptions || {
       mode: 'cors',
       credentials: 'include',
     },

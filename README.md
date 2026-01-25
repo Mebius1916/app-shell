@@ -18,7 +18,22 @@ npm install @byted/aegis
 
 ## 使用指南 (Usage)
 
-### 1. 创建 Service Worker (sw.ts)
+### 1. 在客户端注册 (main.ts)
+
+在你的应用入口文件中：
+
+```typescript
+import { registerServiceWorker } from '@byted/aegis/client';
+
+registerServiceWorker({
+  // 发现新版本时自动更新
+  autoSkipWaiting: true, 
+  // 或者自定义 UI 提示：
+  // autoSkipWaiting: (update) => showUpdateModal(update)
+});
+```
+
+### 2. 创建 Service Worker (sw.ts)
 
 在项目根目录下创建 `sw.ts` 文件：
 
@@ -26,6 +41,10 @@ npm install @byted/aegis
 import { createServiceWorker } from '@byted/aegis';
 
 createServiceWorker({
+  // 忽略 Slardar 监控请求
+  ignore: {
+    patterns: ['slardar']
+  },
   // API 缓存策略 (网络优先)
   api: {
     routes: ['/api/v1/'],
@@ -50,18 +69,78 @@ createServiceWorker({
 });
 ```
 
-### 2. 在客户端注册 (main.ts)
+### 3. 配置构建工具 (Build Config)
 
-在你的应用入口文件中：
+为了让 Service Worker 生效，你需要使用 Workbox 插件将 `sw.ts` 编译并注入预缓存清单。
 
-```typescript
-import { registerServiceWorker } from '@byted/aegis/client';
+#### Webpack
 
-registerServiceWorker({
-  // 发现新版本时自动更新
-  autoSkipWaiting: true, 
-  // 或者自定义 UI 提示：
-  // autoSkipWaiting: (update) => showUpdateModal(update)
+```javascript
+// webpack.config.js
+const { InjectManifest } = require('workbox-webpack-plugin');
+
+module.exports = {
+  // ...
+  plugins: [
+    new InjectManifest({
+      swSrc: './src/sw.ts',
+      swDest: 'sw.js',
+      // 增加文件大小限制，防止大文件被漏掉
+      maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+      // 排除非必要的构建产物
+      exclude: [/\.map$/, /hot-update/, /asset-manifest\.json$/, /LICENSE/, /\.html$/],
+      // 确保包含 JS/CSS/图片
+      include: [/\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.svg$/],
+    }),
+  ],
+};
+```
+
+#### Rspack（edenx）
+
+```javascript
+// rspack.config.ts (使用 @edenx/app-tools 或 @rsbuild/core)
+import { InjectManifest } from '@aaroon/workbox-rspack-plugin';
+
+export default defineConfig({
+  tools: {
+    bundlerChain(chain) {
+      chain.plugin('workbox').use(InjectManifest, [{
+        swSrc: './src/sw.ts',
+        swDest: 'sw.js',
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        exclude: [/\.map$/, /hot-update/, /asset-manifest\.json$/, /LICENSE/],
+        // 根据需要包含或排除 index.html
+        include: [/\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.svg$/],
+      }]);
+    }
+  }
+});
+```
+
+#### Vite
+
+```javascript
+// vite.config.ts
+import { VitePWA } from 'vite-plugin-pwa';
+
+export default defineConfig({
+  plugins: [
+    VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      injectManifest: {
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        exclude: [/\.map$/, /hot-update/, /asset-manifest\.json$/, /LICENSE/, /\.html$/],
+        include: [/\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.svg$/],
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
+      },
+    }),
+  ],
 });
 ```
 
@@ -95,14 +174,15 @@ createServiceWorker({
 
 位于生命周期的 **Level 2**。用于配置后端接口的缓存行为。
 
-| 参数名                    | 类型         | 必传         | 默认值          | 说明                                                               |
-| :------------------------ | :----------- | :----------- | :-------------- | :----------------------------------------------------------------- |
-| `routes`                | `string[]` | **是** | -               | 需要拦截的接口路径前缀列表（如 `['/api/v1']`）                   |
-| `cacheName`             | `string`   | 否           | `'api-cache'` | Cache Storage 的名称                                               |
-| `validateResponse`      | `Function` | 否           | `response.ok` | 自定义校验函数 `(data, response) => boolean`。返回 true 才缓存。 |
-| `networkTimeoutSeconds` | `number`   | 否           | `3`           | 网络请求超时时间（秒）。超时后自动降级到缓存。                     |
-| `maxEntries`            | `number`   | 否           | `100`         | 最大缓存条目数（LRU 策略）                                         |
-| `maxAgeSeconds`         | `number`   | 否           | `86400`       | 缓存最大有效期（秒），默认 24 小时                                 |
+| 参数名                    | 类型            | 必传         | 默认值                         | 说明                                                               |
+| :------------------------ | :-------------- | :----------- | :----------------------------- | :----------------------------------------------------------------- |
+| `routes`                | `string[]`    | **是** | -                              | 需要拦截的接口路径前缀列表（如 `['/api/v1']`）                   |
+| `cacheName`             | `string`      | 否           | `'api-cache'`                | Cache Storage 的名称                                               |
+| `validateResponse`      | `Function`    | 否           | `response.ok`                | 自定义校验函数 `(data, response) => boolean`。返回 true 才缓存。 |
+| `networkTimeoutSeconds` | `number`      | 否           | `3`                          | 网络请求超时时间（秒）。超时后自动降级到缓存。                     |
+| `maxEntries`            | `number`      | 否           | `100`                        | 最大缓存条目数（LRU 策略）                                         |
+| `maxAgeSeconds`         | `number`      | 否           | `86400`                      | 缓存最大有效期（秒），默认 24 小时                                 |
+| `fetchOptions`          | `RequestInit` | 否           | `{ credentials: 'include' }` | 配置跨域模式、凭证策略等（如 `{ mode: 'cors' }`）                |
 
 #### 示例
 
@@ -112,9 +192,11 @@ createServiceWorker({
   api: {
     routes: ['/api/user'],
     cacheName: 'user-api-cache',
-    // 仅缓存 10 分钟，最多 50 条
-    maxAgeSeconds: 600,
-    maxEntries: 50,
+    // 配置 fetch 参数 (如不需要 Cookie)
+    fetchOptions: {
+      credentials: 'omit',
+      mode: 'cors'
+    },
     // 业务校验
     validateResponse: async (data) => data.code === 200
   }
@@ -149,12 +231,13 @@ createServiceWorker({
 
 位于生命周期的 **Level 3**。用于配置 JS/CSS/Image 等资源的缓存。
 
-| 参数名            | 类型        | 必传 | 默认值                 | 说明                         |
-| :---------------- | :---------- | :--- | :--------------------- | :--------------------------- |
-| `enabled`       | `boolean` | 否   | `true`               | 是否开启静态资源缓存         |
-| `cacheName`     | `string`  | 否   | `'static-resources'` | Cache Storage 的名称         |
-| `maxEntries`    | `number`  | 否   | `500`                | 最大缓存文件数               |
-| `maxAgeSeconds` | `number`  | 否   | `2592000`            | 缓存有效期（秒），默认 30 天 |
+| 参数名            | 类型            | 必传 | 默认值                                    | 说明                                         |
+| :---------------- | :-------------- | :--- | :---------------------------------------- | :------------------------------------------- |
+| `enabled`       | `boolean`     | 否   | `true`                                  | 是否开启静态资源缓存                         |
+| `cacheName`     | `string`      | 否   | `'static-resources'`                    | Cache Storage 的名称                         |
+| `maxEntries`    | `number`      | 否   | `500`                                   | 最大缓存文件数                               |
+| `maxAgeSeconds` | `number`      | 否   | `2592000`                               | 缓存有效期（秒），默认 30 天                 |
+| `fetchOptions`  | `RequestInit` | 否   | `{ mode: 'cors', credentials: 'omit' }` | 配置跨域模式（如私有图片需设为 `include`） |
 
 #### 示例
 
@@ -172,11 +255,9 @@ createServiceWorker({
 });
 ```
 
-### 5. 导航与兜底配置 (`navigation` & `fallback`)
+### 5. 导航配置 (`navigation`)
 
-位于生命周期的 **Fallback** 阶段。
-
-#### 导航配置 (`navigation`)
+位于生命周期的 **Level 4**。用于处理页面导航请求（即浏览器地址栏跳转）。
 
 | 参数名                    | 类型       | 必传 | 默认值      | 说明                           |
 | :------------------------ | :--------- | :--- | :---------- | :----------------------------- |
@@ -185,23 +266,33 @@ createServiceWorker({
 | `maxEntries`            | `number` | 否   | `20`      | 最大缓存页面数                 |
 | `maxAgeSeconds`         | `number` | 否   | `86400`   | 缓存有效期（秒），默认 24 小时 |
 
-#### 兜底配置 (`fallback`)
+#### 示例
 
-| 参数名      | 类型        | 必传 | 默认值   | 说明                                                                   |
-| :---------- | :---------- | :--- | :------- | :--------------------------------------------------------------------- |
-| `enabled` | `boolean` | 否   | `true` | 是否开启离线兜底。当导航请求彻底失败时，返回预缓存的 `/index.html`。 |
+```typescript
+createServiceWorker({
+  // ...其他配置
+  navigation: {
+    // 页面缓存 7 天
+    maxAgeSeconds: 7 * 24 * 60 * 60,
+    // 网络太慢（超过2秒）就直接展示缓存页面
+    networkTimeoutSeconds: 2
+  }
+});
+```
+
+### 6. 兜底配置 (`fallback`)
+
+位于生命周期的 **Fallback** 阶段。当所有策略失效时的最后一道防线。
+
+| 参数名      | 类型        | 必传 | 默认值   | 说明                                                                                                         |
+| :---------- | :---------- | :--- | :------- | :----------------------------------------------------------------------------------------------------------- |
+| `enabled` | `boolean` | 否   | `true` | 是否开启离线兜底。当导航请求彻底失败时，优先从 Runtime Cache 查找 `index.html`，如果未找到则从预缓存查找。 |
 
 #### 示例
 
 ```typescript
 createServiceWorker({
   // ...其他配置
-  // 导航策略
-  navigation: {
-    cacheName: 'my-app-shell-v2',
-    networkTimeoutSeconds: 5
-  },
-  // 开启离线兜底
   fallback: {
     enabled: true
   }
@@ -225,7 +316,7 @@ createServiceWorker({
 
 ```typescript
 registerServiceWorker({
-  swUrl: '/service-worker.js',
+  swUrl: '/service-worker.js', // 默认'/sw.js'，可不填
   // 监控 SW 报错
   onError: (error) => {
     console.error('[SW Error]', error);

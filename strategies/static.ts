@@ -20,7 +20,7 @@ export function registerStaticAssetsStrategy(config: StaticAssetsConfig) {
         statuses: [200],
       }),
     ],
-    fetchOptions: {
+    fetchOptions: config.fetchOptions || {
       mode: 'cors',
       credentials: 'omit',
     },

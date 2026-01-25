@@ -55,7 +55,7 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
 
   // 5. Fallback
   if (config.fallback?.enabled !== false) {
-    setupOfflineFallback();
+    setupOfflineFallback(config.navigation);
   }
 
   // 6. Error Reporting
