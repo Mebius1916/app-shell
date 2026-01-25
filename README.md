@@ -316,8 +316,23 @@ createServiceWorker({
 
 ```typescript
 registerServiceWorker({
-  swUrl: '/service-worker.js', // 默认'/sw.js'，可不填
-  // 监控 SW 报错
+  // SW 文件路径，默认为 '/sw.js'
+  swUrl: '/service-worker.js',
+
+  // 自动更新策略
+  // true: 发现新版本立即更新（可能导致懒加载资源 404）
+  // false: 等待用户关闭所有页面后再更新
+  // function: 自定义更新逻辑（推荐），例如弹窗提示用户
+  autoSkipWaiting: (reload) => {
+    if (confirm('发现新版本，是否刷新？')) {
+      reload();
+    }
+  },
+
+  // 是否开启开发模式日志 (默认为 process.env.NODE_ENV === 'development')
+  isDev: false,
+
+  // 监控 SW 运行时报错
   onError: (error) => {
     console.error('[SW Error]', error);
     // Slardar.report(error);
