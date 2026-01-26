@@ -18,6 +18,11 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
     if (isDev) {
       console.log('[Aegis] Debug mode enabled. SW URL:', swUrl);
       
+      // 监听 controllerchange，这是无限刷新的常见源头
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('[Aegis] navigator.serviceWorker.controller changed.');
+      });
+
       wb.addEventListener('installed', (event) => {
         console.log(`[Aegis] Service Worker installed (${event.isUpdate ? 'Update' : 'First install'}).`);
       });
@@ -47,6 +52,9 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
       
       if (isDev) {
         console.log(`[Aegis] New Service Worker waiting. autoSkipWaiting=${shouldSkip}`);
+        if (shouldSkip === true) {
+          console.warn('[Aegis] Warning: autoSkipWaiting is enabled in dev mode. This might cause infinite page reloads if your app reloads on controller change.');
+        }
       }
 
       if (shouldSkip === true) {
