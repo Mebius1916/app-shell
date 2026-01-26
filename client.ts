@@ -10,12 +10,12 @@ export interface RegisterOptions {
 export function registerServiceWorker(options: RegisterOptions = {}) {
   if ('serviceWorker' in navigator) {
     const swUrl = options.swUrl || '/sw.js';
-    const isDev = options.isDev ?? process.env.NODE_ENV === 'development';
-    console.log('isDev',isDev);
+    const isDev = !!options.isDev;
+    
     const wb = new Workbox(swUrl);
 
     // Debug Logs
-    if (process.env.NODE_ENV === 'development' || isDev) {
+    if (isDev) {
       wb.addEventListener('installed', (event) => {
         console.log(`[Aegis] Service Worker installed (${event.isUpdate ? 'Update' : 'First install'}).`);
       });
@@ -43,7 +43,7 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
       // 默认策略：生产环境(isDev=false)自动跳过，开发环境需显式开启
       const shouldSkip = options.autoSkipWaiting ?? !isDev;
       
-      if (process.env.NODE_ENV === 'development' || isDev) {
+      if (isDev) {
         console.log(`[Aegis] New Service Worker waiting. autoSkipWaiting=${shouldSkip}`);
       }
 
@@ -58,21 +58,10 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
     });
 
     // Best Practice: Register after window load to avoid blocking initial page load
-    const register = async () => {
-      try {
-        await wb.register();
-      } catch (error: any) {
-        if (process.env.NODE_ENV === 'development' || isDev) {
-          console.error('[Aegis] Service Worker registration failed:', error);
-        }
-        options.onError?.(error instanceof Error ? error : new Error(String(error)));
-      }
-    };
-
     if (document.readyState === 'complete') {
-      register();
+      wb.register();
     } else {
-      window.addEventListener('load', () => register());
+      window.addEventListener('load', () => wb.register());
     }
     
     return wb;
