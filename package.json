@@ -1,6 +1,6 @@
 {
   "name": "@byted/aegis",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Service Worker Disaster Recovery SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,12 +22,11 @@
     "workbox-strategies": "^7.0.0",
     "workbox-window": "^7.0.0"
   },
-  "author": "Bytedance",
+  "author": "liaoshihan",
   "license": "ISC",
   "devDependencies": {
     "@rspack/cli": "^1.7.2",
     "@rspack/core": "^1.7.2",
-    "ts-node": "^10.9.2",
-    "workbox-webpack-plugin": "^7.4.0"
+    "ts-node": "^10.9.2"
   }
 }
