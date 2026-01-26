@@ -88,7 +88,7 @@ module.exports = {
       // 增加文件大小限制，防止大文件被漏掉
       maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
       // 排除非必要的构建产物
-      exclude: [/\.map$/, /hot-update/, /asset-manifest\.json$/, /LICENSE/, /\.html$/],
+      exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/, /\.html$/],
       // 确保包含 JS/CSS/图片
       include: [/\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.svg$/],
     }),
@@ -109,7 +109,7 @@ export default defineConfig({
         swSrc: './src/sw.ts',
         swDest: 'sw.js',
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        exclude: [/\.map$/, /hot-update/, /asset-manifest\.json$/, /LICENSE/],
+        exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
         // 根据需要包含或排除 index.html
         include: [/\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.svg$/],
       }]);
@@ -132,7 +132,7 @@ export default defineConfig({
       filename: 'sw.ts',
       injectManifest: {
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        exclude: [/\.map$/, /hot-update/, /asset-manifest\.json$/, /LICENSE/, /\.html$/],
+        exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/, /\.html$/],
         include: [/\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.svg$/],
       },
       devOptions: {
@@ -305,11 +305,11 @@ createServiceWorker({
 
 `registerServiceWorker` 的参数说明：
 
-| 参数名              | 类型                        | 必传 | 默认值             | 说明                                                                                                                                        |
-| :------------------ | :-------------------------- | :--- | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| `swUrl`           | `string`                  | 否   | `'/sw.js'`       | Service Worker 文件的部署路径                                                                                                               |
-| `autoSkipWaiting` | `boolean` \| `Function` | 否   | 见说明           | 更新策略。<br>- `true`: 自动更新<br>- `false`: 手动更新<br>- `Function`: `(update) => void`，自定义回调，调用 `update()` 触发更新。<br>**默认值**：生产环境下为 `true`，开发环境下为 `false`。 |
-| `onError`         | `(error: Error) => void`  | 否   | `undefined`      | Service Worker 错误回调。SW 内部的异常会通过 postMessage 透传到这里，便于对接监控平台。                                                     |
+| 参数名              | 类型                        | 必传 | 默认值       | 说明                                                                                                                                        |
+| :------------------ | :-------------------------- | :--- | :----------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| `swUrl`           | `string`                  | 否   | `'/sw.js'` | Service Worker 文件的部署路径                                                                                                               |
+| `autoSkipWaiting` | `boolean` \| `Function` | 否   | `true`     | 更新策略。<br>- `true`: 自动更新<br>- `false`: 手动更新<br>- `Function`: `(update) => void`，自定义回调，调用 `update()` 触发更新 |
+| `onError`         | `(error: Error) => void`  | 否   | `undefined`  | Service Worker 错误回调。SW 内部的异常会通过 postMessage 透传到这里，便于对接监控平台。                                                     |
 
 #### 示例
 

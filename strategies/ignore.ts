@@ -4,8 +4,7 @@ import { NetworkOnly } from 'workbox-strategies';
 import { IgnoreConfig } from '../types';
 
 export function registerIgnoreStrategy(config?: IgnoreConfig) {
-  const defaultPatterns = ['hot-update'];
-  const patterns = [...new Set([...defaultPatterns, ...(config?.patterns || [])])];
+  const patterns = config?.patterns || [];
 
   const ignoreMatcher = ({ url }: { url: URL }) => {
     return patterns.some(pattern => 
