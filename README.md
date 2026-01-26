@@ -308,8 +308,7 @@ createServiceWorker({
 | 参数名              | 类型                        | 必传 | 默认值             | 说明                                                                                                                                        |
 | :------------------ | :-------------------------- | :--- | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | `swUrl`           | `string`                  | 否   | `'/sw.js'`       | Service Worker 文件的部署路径                                                                                                               |
-| `autoSkipWaiting` | `boolean` \| `Function` | 否   | `!isDev`         | 更新策略。<br>- `true`: 自动更新<br>- `false`: 手动更新<br>- `Function`: `(update) => void`，自定义回调，调用 `update()` 触发更新。<br>**注意**：开发环境下默认为 `false`，生产环境下默认为 `true`。 |
-| `isDev`           | `boolean`                 | 否   | `process.env...` | 开发环境标识。<br>- 影响 `autoSkipWaiting` 的默认值（开发环境默认不自动更新，防止调试时页面刷新）。<br>- 依然可以通过显式设置 `autoSkipWaiting: true` 在开发环境下测试更新流程。 |
+| `autoSkipWaiting` | `boolean` \| `Function` | 否   | 见说明           | 更新策略。<br>- `true`: 自动更新<br>- `false`: 手动更新<br>- `Function`: `(update) => void`，自定义回调，调用 `update()` 触发更新。<br>**默认值**：生产环境下为 `true`，开发环境下为 `false`。 |
 | `onError`         | `(error: Error) => void`  | 否   | `undefined`      | Service Worker 错误回调。SW 内部的异常会通过 postMessage 透传到这里，便于对接监控平台。                                                     |
 
 #### 示例
@@ -328,9 +327,6 @@ registerServiceWorker({
       reload();
     }
   },
-
-  // 是否开启开发模式日志 (默认为 process.env.NODE_ENV === 'development')
-  isDev: false,
 
   // 监控 SW 运行时报错
   onError: (error) => {

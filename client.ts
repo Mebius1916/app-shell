@@ -58,10 +58,21 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
     });
 
     // Best Practice: Register after window load to avoid blocking initial page load
+    const register = async () => {
+      try {
+        await wb.register();
+      } catch (error: any) {
+        if (process.env.NODE_ENV === 'development' || isDev) {
+          console.error('[Aegis] Service Worker registration failed:', error);
+        }
+        options.onError?.(error instanceof Error ? error : new Error(String(error)));
+      }
+    };
+
     if (document.readyState === 'complete') {
-      wb.register();
+      register();
     } else {
-      window.addEventListener('load', () => wb.register());
+      window.addEventListener('load', () => register());
     }
     
     return wb;
