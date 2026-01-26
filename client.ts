@@ -11,7 +11,7 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
   if ('serviceWorker' in navigator) {
     const swUrl = options.swUrl || '/sw.js';
     const isDev = options.isDev ?? process.env.NODE_ENV === 'development';
-
+    console.log('isDev',isDev);
     const wb = new Workbox(swUrl);
 
     // Debug Logs
