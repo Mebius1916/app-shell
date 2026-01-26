@@ -16,6 +16,8 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
 
     // Debug Logs
     if (isDev) {
+      console.log('[Aegis] Debug mode enabled. SW URL:', swUrl);
+      
       wb.addEventListener('installed', (event) => {
         console.log(`[Aegis] Service Worker installed (${event.isUpdate ? 'Update' : 'First install'}).`);
       });
@@ -58,10 +60,25 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
     });
 
     // Best Practice: Register after window load to avoid blocking initial page load
+    const register = () => {
+      wb.register().then((registration) => {
+        if (isDev && registration) {
+          console.log('[Aegis] Register success. Scope:', registration.scope);
+          if (registration.active) {
+            console.log('[Aegis] Current Status: Active');
+          }
+        }
+      }).catch((err) => {
+        if (isDev) {
+          console.error('[Aegis] Register failed:', err);
+        }
+      });
+    };
+
     if (document.readyState === 'complete') {
-      wb.register();
+      register();
     } else {
-      window.addEventListener('load', () => wb.register());
+      window.addEventListener('load', register);
     }
     
     return wb;
