@@ -308,8 +308,8 @@ createServiceWorker({
 | 参数名              | 类型                        | 必传 | 默认值             | 说明                                                                                                                                        |
 | :------------------ | :-------------------------- | :--- | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | `swUrl`           | `string`                  | 否   | `'/sw.js'`       | Service Worker 文件的部署路径                                                                                                               |
-| `autoSkipWaiting` | `boolean` \| `Function` | 否   | `true`           | 更新策略。<br>- `true`: 自动更新<br>- `false`: 手动更新<br>- `Function`: `(update) => void`，自定义回调，调用 `update()` 触发更新 |
-| `isDev`           | `boolean`                 | 否   | `process.env...` | 强制指定开发模式。开发模式下不会自动 `skipWaiting`，防止无限刷新循环。                                                                    |
+| `autoSkipWaiting` | `boolean` \| `Function` | 否   | `!isDev`         | 更新策略。<br>- `true`: 自动更新<br>- `false`: 手动更新<br>- `Function`: `(update) => void`，自定义回调，调用 `update()` 触发更新。<br>**注意**：开发环境下默认为 `false`，生产环境下默认为 `true`。 |
+| `isDev`           | `boolean`                 | 否   | `process.env...` | 开发环境标识。<br>- 影响 `autoSkipWaiting` 的默认值（开发环境默认不自动更新，防止调试时页面刷新）。<br>- 依然可以通过显式设置 `autoSkipWaiting: true` 在开发环境下测试更新流程。 |
 | `onError`         | `(error: Error) => void`  | 否   | `undefined`      | Service Worker 错误回调。SW 内部的异常会通过 postMessage 透传到这里，便于对接监控平台。                                                     |
 
 #### 示例

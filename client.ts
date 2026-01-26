@@ -11,8 +11,23 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
   if ('serviceWorker' in navigator) {
     const swUrl = options.swUrl || '/sw.js';
     const isDev = options.isDev ?? process.env.NODE_ENV === 'development';
-    
+
     const wb = new Workbox(swUrl);
+
+    // Debug Logs
+    if (process.env.NODE_ENV === 'development' || isDev) {
+      wb.addEventListener('installed', (event) => {
+        console.log(`[Aegis] Service Worker installed (${event.isUpdate ? 'Update' : 'First install'}).`);
+      });
+
+      wb.addEventListener('controlling', () => {
+        console.log('[Aegis] Service Worker is now controlling the page. Note: If the page reloads immediately after this, it might cause an infinite loop.');
+      });
+      
+      wb.addEventListener('activated', () => {
+         console.log('[Aegis] Service Worker activated.');
+      });
+    }
 
     // 订阅错误
     wb.addEventListener('message', (event) => {
@@ -24,18 +39,23 @@ export function registerServiceWorker(options: RegisterOptions = {}) {
       }
     });
 
-    if (!isDev) {
-      wb.addEventListener('waiting', () => {
-        if (options.autoSkipWaiting === undefined || options.autoSkipWaiting === true) {
+    wb.addEventListener('waiting', () => {
+      // 默认策略：生产环境(isDev=false)自动跳过，开发环境需显式开启
+      const shouldSkip = options.autoSkipWaiting ?? !isDev;
+      
+      if (process.env.NODE_ENV === 'development' || isDev) {
+        console.log(`[Aegis] New Service Worker waiting. autoSkipWaiting=${shouldSkip}`);
+      }
+
+      if (shouldSkip === true) {
+        wb.messageSkipWaiting();
+      }  
+      else if (typeof shouldSkip === 'function') {
+        shouldSkip(() => {
           wb.messageSkipWaiting();
-        } 
-        else if (typeof options.autoSkipWaiting === 'function') {
-          options.autoSkipWaiting(() => {
-            wb.messageSkipWaiting();
-          });
-        }
-      });
-    }
+        });
+      }
+    });
 
     // Best Practice: Register after window load to avoid blocking initial page load
     if (document.readyState === 'complete') {

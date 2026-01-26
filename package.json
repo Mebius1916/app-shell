@@ -1,6 +1,6 @@
 {
   "name": "@byted/aegis",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Service Worker Disaster Recovery SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
