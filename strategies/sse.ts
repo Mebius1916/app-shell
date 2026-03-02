@@ -21,8 +21,15 @@ export function registerSSEStrategy(config: SSEConfig) {
 
   const sseHandler = async ({ event, request }: { event: any, request: Request }) => {
     try {
+      const controller = new AbortController();
+      const timeoutSeconds = config.networkTimeoutSeconds || 3;
+      const timeoutId = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
+
       // 先发起网络请求
-      const response = await fetch(request);
+      const response = await fetch(request, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
       
       // 如果响应成功且是 SSE 流，则返回响应并缓存
       if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {

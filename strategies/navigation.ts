@@ -4,7 +4,7 @@ import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { NavigationConfig } from '../types';
 
-export function registerNavigationStrategy(config: NavigationConfig = {}) {
+export function registerNavigationStrategy(config: NavigationConfig = {}, denylist: RegExp[] = []) {
   const navigationHandler = new NetworkFirst({
     cacheName: config.cacheName || 'pages',
     networkTimeoutSeconds: config.networkTimeoutSeconds || 3,
@@ -23,5 +23,13 @@ export function registerNavigationStrategy(config: NavigationConfig = {}) {
     ],
   });
 
-  registerRoute(new NavigationRoute(navigationHandler));
+  // Workbox default denylist:
+  const defaultDenylist = [
+    new RegExp('^/_'), 
+    new RegExp('/[^/?]+\\.[^/]+$')
+  ];
+
+  registerRoute(new NavigationRoute(navigationHandler, {
+    denylist: [...defaultDenylist, ...denylist]
+  }));
 }

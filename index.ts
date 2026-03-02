@@ -37,6 +37,10 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
   // 3. Register Strategies
   registerIgnoreStrategy(config.ignore);
 
+  // 将 ignore patterns 转换为正则，并传递给 NavigationStrategy 的 denylist
+  const ignorePatterns = config.ignore?.patterns || [];
+  const ignoreRegexs = ignorePatterns.map(pattern => new RegExp(pattern));
+
   if (config.sse) {
     registerSSEStrategy(config.sse);
   }
@@ -51,7 +55,7 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
     registerStaticAssetsStrategy({ enabled: true });
   }
 
-  registerNavigationStrategy(config.navigation);
+  registerNavigationStrategy(config.navigation, ignoreRegexs);
 
   // 5. Fallback
   if (config.fallback?.enabled !== false) {

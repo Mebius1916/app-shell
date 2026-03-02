@@ -25,6 +25,7 @@ export interface SSEConfig {
   cacheName?: string;
   maxEntries?: number;
   maxAgeSeconds?: number;
+  networkTimeoutSeconds?: number;
 }
 
 export interface NavigationConfig {
