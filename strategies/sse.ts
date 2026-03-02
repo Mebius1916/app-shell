@@ -3,6 +3,7 @@ import { registerRoute } from 'workbox-routing';
 import { createParser, EventSourceMessage } from 'eventsource-parser';
 import { CacheExpiration } from 'workbox-expiration';
 import { SSEConfig } from '../types';
+import { shouldIgnore } from '../utils/ignore';
 
 interface SSEEvent {
   type: string;
@@ -11,7 +12,7 @@ interface SSEEvent {
   retry?: string;
 }
 
-export function registerSSEStrategy(config: SSEConfig) {
+export function registerSSEStrategy(config: SSEConfig, ignorePatterns: string[] = []) {
   const cacheName = config.cacheName || 'sse-cache'; 
   
   const sseExpiration = new CacheExpiration(cacheName, {
@@ -131,7 +132,10 @@ export function registerSSEStrategy(config: SSEConfig) {
 
   config.routes.forEach(route => {
     registerRoute(
-      ({ url }) => url.pathname === route,
+      ({ url }) => {
+        if (shouldIgnore(url, ignorePatterns)) return false;
+        return url.pathname === route;
+      },
       // @ts-ignore
       sseHandler
     );

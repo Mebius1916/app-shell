@@ -4,8 +4,9 @@ import { StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { StaticAssetsConfig } from '../types';
+import { shouldIgnore } from '../utils/ignore';
 
-export function registerStaticAssetsStrategy(config: StaticAssetsConfig) {
+export function registerStaticAssetsStrategy(config: StaticAssetsConfig, ignorePatterns: string[] = []) {
   if (config.enabled === false) return;
 
   const staticStrategy = new StaleWhileRevalidate({
@@ -27,11 +28,13 @@ export function registerStaticAssetsStrategy(config: StaticAssetsConfig) {
   });
 
   registerRoute(
-    ({ request }) => 
-      request.destination === 'script' || 
-      request.destination === 'style' || 
-      request.destination === 'image' ||
-      request.destination === 'font',
+    ({ request, url }) => {
+      if (shouldIgnore(url, ignorePatterns)) return false;
+      return request.destination === 'script' || 
+        request.destination === 'style' || 
+        request.destination === 'image' ||
+        request.destination === 'font';
+    },
     staticStrategy
   );
 }

@@ -3,8 +3,9 @@ import { registerRoute } from 'workbox-routing';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { ApiStrategyConfig } from '../types';
+import { shouldIgnore } from '../utils/ignore';
 
-export function registerApiStrategy(config: ApiStrategyConfig) {
+export function registerApiStrategy(config: ApiStrategyConfig, ignorePatterns: string[] = []) {
   const apiStrategy = new NetworkFirst({
     cacheName: config.cacheName || 'api-cache',
     networkTimeoutSeconds: config.networkTimeoutSeconds || 3,
@@ -47,6 +48,7 @@ export function registerApiStrategy(config: ApiStrategyConfig) {
 
   registerRoute(
     ({ url }) => {
+      if (shouldIgnore(url, ignorePatterns)) return false;
       return config.routes.some(route => {
          return url.pathname.startsWith(route);
       });

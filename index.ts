@@ -10,7 +10,6 @@ import { registerApiStrategy } from './strategies/api';
 import { registerStaticAssetsStrategy } from './strategies/static';
 import { registerSSEStrategy } from './strategies/sse';
 import { registerNavigationStrategy } from './strategies/navigation';
-import { registerIgnoreStrategy } from './strategies/ignore';
 import { setupOfflineFallback } from './strategies/fallback';
 import { reportError } from './utils/logger';
 
@@ -35,27 +34,24 @@ export function createServiceWorker(config: ServiceWorkerConfig) {
   precacheAndRoute(self.__WB_MANIFEST || []);
 
   // 3. Register Strategies
-  registerIgnoreStrategy(config.ignore);
-
-  // 将 ignore patterns 转换为正则，并传递给 NavigationStrategy 的 denylist
+  // 将 ignore patterns 传递给各策略
   const ignorePatterns = config.ignore?.patterns || [];
-  const ignoreRegexs = ignorePatterns.map(pattern => new RegExp(pattern));
 
   if (config.sse) {
-    registerSSEStrategy(config.sse);
+    registerSSEStrategy(config.sse, ignorePatterns);
   }
 
   if (config.api) {
-    registerApiStrategy(config.api);
+    registerApiStrategy(config.api, ignorePatterns);
   }
 
   if (config.staticAssets !== undefined) {
-    registerStaticAssetsStrategy(config.staticAssets);
+    registerStaticAssetsStrategy(config.staticAssets, ignorePatterns);
   } else {
-    registerStaticAssetsStrategy({ enabled: true });
+    registerStaticAssetsStrategy({ enabled: true }, ignorePatterns);
   }
 
-  registerNavigationStrategy(config.navigation, ignoreRegexs);
+  registerNavigationStrategy(config.navigation, ignorePatterns);
 
   // 5. Fallback
   if (config.fallback?.enabled !== false) {
