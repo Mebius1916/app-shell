@@ -2,6 +2,7 @@
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { NavigationConfig } from '../types';
 import { shouldIgnore } from '../utils/ignore';
 
@@ -10,6 +11,9 @@ export function registerNavigationStrategy(config: NavigationConfig = {}, ignore
     cacheName: config.cacheName || 'pages',
     networkTimeoutSeconds: config.networkTimeoutSeconds || 3,
     plugins: [
+      new CacheableResponsePlugin({
+        statuses: [200],
+      }),
       new ExpirationPlugin({
         maxEntries: config.maxEntries || 20,
         maxAgeSeconds: config.maxAgeSeconds || 24 * 60 * 60,
@@ -17,7 +21,11 @@ export function registerNavigationStrategy(config: NavigationConfig = {}, ignore
       }),
       {
         fetchDidSucceed: async ({ response }) => {
-          if (response.ok) return response;
+          // Allow 2xx, 3xx and opaque redirects to pass through
+          if (response.ok || (response.status >= 300 && response.status < 400) || response.type === 'opaqueredirect') {
+            return response;
+          }
+          // Treat 4xx/5xx as errors to trigger cache fallback
           throw new Error('Response not ok');
         },
       },
