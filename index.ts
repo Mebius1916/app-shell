@@ -20,6 +20,9 @@ export * from './client';
 
 export function createServiceWorker(config: ServiceWorkerConfig) {
   // 1. Init
+  if (config.enabled === false) {
+    setSwEnabled(false);
+  }
   clientsClaim(); // 立即接管页面 
   cleanupOutdatedCaches(); // 清除旧的缓存
 

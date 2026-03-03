@@ -40,6 +40,7 @@ export interface IgnoreConfig {
 }
 
 export interface ServiceWorkerConfig {
+  enabled?: boolean;
   api?: ApiStrategyConfig;
   staticAssets?: StaticAssetsConfig;
   sse?: SSEConfig;

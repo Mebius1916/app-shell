@@ -41,6 +41,9 @@ registerServiceWorker({
 import { createServiceWorker } from '@byted/aegis';
 
 createServiceWorker({
+  // [可选] 全局开关：设为 false 可紧急熔断，所有请求直接走网络
+  enabled: true,
+
   // 忽略 Slardar 监控请求
   ignore: {
     patterns: ['slardar']
@@ -150,9 +153,20 @@ export default defineConfig({
 
 以下是 `createServiceWorker` 的完整参数说明。
 
+### 0. 全局开关 (`enabled`)
+
+位于生命周期的 **Level -1**。最顶层的开关，用于紧急熔断。
+
+| 参数名 | 类型 | 必传 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| `enabled` | `boolean` | 否 | `true` | 是否启用 Service Worker 逻辑。设为 `false` 时，所有请求直接透传网络，忽略所有策略。 |
+
 ### 1. 忽略名单配置 (`ignore`)
 
-位于生命周期的 **Level 0**。用于指定某些 URL 完全绕过 Service Worker，直接透传网络，**不会被任何策略（API、静态资源、导航等）拦截**。
+位于生命周期的 **Level 0**。用于指定某些 URL 完全绕过 Service Worker。
+**核心作用**：
+1. 为“通配型”策略（如静态资源、导航）提供例外机制。
+2. 为“前缀型”策略（如 API）排除特定子路径。
 
 | 参数名       | 类型         | 必传         | 说明                                                          |
 | :----------- | :----------- | :----------- | :------------------------------------------------------------ |
